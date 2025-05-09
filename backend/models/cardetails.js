@@ -5,22 +5,42 @@ const carsDataSchema = new Schema({
         required: true,
         index: true,
     },
-    typeofCar: {
+    catagory: {
         type: String,
         required: true,
         index: true,
     },
-    engineType: {
+    color: {
         type: String,
         required: true,
         index: true,
     },
-    colorOfCar: {
+    fuel: {
+        type: String,
+        require: true,
+        index: true
+    },
+    hp: {
         type: String,
         required: true,
         index: true,
     },
-    carImage: {
+    torque: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    transmission: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    gears: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    drivetrain: {
         type: String,
         required: true,
         index: true,
@@ -28,6 +48,16 @@ const carsDataSchema = new Schema({
     availability: {
         type: Boolean,
         default: true,
+        index: true,
+    },
+    discription: {
+        type: String,
+        require: true,
+        index: true
+    },
+    image: {
+        type: String,
+        required: true,
         index: true,
     },
 }, { timestamps: true })

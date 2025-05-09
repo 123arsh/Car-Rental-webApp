@@ -42,9 +42,9 @@ const Hero = () => {
       </div> */}
 
       {/* Browse cars */}
-      <div>
+      {/* <div>
         <Browse/>
-      </div>
+      </div> */}
     </div>
   );
 };

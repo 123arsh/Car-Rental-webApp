@@ -29,10 +29,10 @@ const Navigation = () => {
         <img src='/images/car.png' className='h-[15px] w-[15px] mt-1.5 ml-2 animate-spin' alt='Animation'/>
       </div>
       <div className='flex justify-center items-center ml-[700px] gap-[70px]'>
-        <h1><a href='#'>Home</a></h1>
-        <h1><a href='#'>Browse Cars</a></h1>
-        <h1><a href='#'>About</a></h1>
-        <h1><a href='#'>Contact</a></h1>
+        <h1><a href='/'>Home</a></h1>
+        <h1><Link to='/browse'>Browse Cars</Link></h1>
+        <h1><Link to='/about'>About</Link></h1>
+        <h1><Link to='/contact'>Contact</Link></h1>
         {userName ? (
           <h1 className='text-lg'>Hi, {userName}</h1>
         ) : (
