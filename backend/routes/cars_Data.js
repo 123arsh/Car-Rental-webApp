@@ -51,11 +51,13 @@ route.post('/addcar', upload.single('image'), async(req, res)=>{
 route.get('/list', async (req, res) => {
   try {
     const carsData = await data.find();
+    const count = carsData.length;
     if (!carsData || carsData.length === 0) {
       return res.status(404).json({ message: 'No cars found.' });
     }
     return res.status(200).json({
       carsData,
+      count
     });
   } catch (error) {
     console.error('Error fetching car data:', error);
