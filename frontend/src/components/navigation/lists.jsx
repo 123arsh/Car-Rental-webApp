@@ -4,6 +4,8 @@ const List = () => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetch('http://localhost:7000/car/list')
@@ -30,6 +32,23 @@ const List = () => {
     setVisible(null);
   };
 
+  const totalPages = Math.ceil(list.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const paginatedList = list.slice(indexOfFirstItem, indexOfLastItem);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen w-full text-3xl text-red-700">
@@ -40,15 +59,14 @@ const List = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen w-full px-4 py-10 gap-10 bg-[#f6f6f6] relative">
-      
+
       {/* CAR LIST */}
       <div className={`flex flex-col items-center gap-10 w-full ${visible ? 'blur-sm pointer-events-none select-none' : ''}`}>
-        {list.map((e) => (
+        {paginatedList.map((e) => (
           <div
             key={e._id}
             className="flex flex-col md:flex-row w-full max-w-5xl min-h-[400px] shadow-lg rounded-3xl p-4 gap-4 bg-white"
           >
-            {/* Image */}
             <div className='rounded-3xl flex justify-center items-center p-2 w-full md:w-[350px] h-[300px]'>
               <img
                 src={`http://localhost:7000${e.image}`}
@@ -57,7 +75,6 @@ const List = () => {
               />
             </div>
 
-            {/* Content */}
             <div className="flex flex-col justify-center gap-4 flex-1 px-4">
               <div className="px-4 py-2 w-full text-center border-b-1 border-[#d1d1d1]">
                 <h1 className="font-semibold font-serif text-2xl">{e.name}</h1>
@@ -86,9 +103,33 @@ const List = () => {
             </div>
           </div>
         ))}
+
+        {/* PAGINATION BUTTONS */}
+        <div className="flex w-full  items-center justify-around gap-4 mt-8">
+          <button
+            className="relative overflow-hidden w-[150px] border border-[#d1d1d1] rounded-xl px-6 py-2 group text-xl font-serif cursor-pointer" onClick={goToPrevPage} disabled={currentPage === 1}>
+            <span className="absolute inset-0 bg-black transition-transform duration-500 translate-y-full group-hover:translate-y-0 z-0"></span>
+            <span className="relative z-10 text-black group-hover:text-white transition-colors duration-300">
+              Previous
+            </span>
+          </button>
+
+          <span className="text-lg font-semibold font-serif border-b-1 border-[#d1d1d1]">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            className="relative overflow-hidden w-[150px] border border-[#d1d1d1] rounded-xl px-6 py-2 group text-xl font-serif cursor-pointer" onClick={goToNextPage} disabled={currentPage === totalPages}>
+            <span className="absolute inset-0 bg-black transition-transform duration-500 translate-y-full group-hover:translate-y-0 z-0"></span>
+            <span className="relative z-10 text-black group-hover:text-white transition-colors duration-300">
+              Next
+            </span>
+          </button>
+          
+        </div>
       </div>
 
-      {/* MODAL */}
+      {/* DETAILS CARD */}
       {visible && (
         <div
           className="h-screen w-full fixed inset-0 z-50 flex justify-center items-center bg-opacity-50 backdrop-blur-sm"
@@ -105,15 +146,17 @@ const List = () => {
               &times;
             </button>
             <div className="flex flex-row h-[80vh] items-center gap-5">
-            <div className='border-r-1 border-[#d1d1d1]'>
+              <div className='border-r-1 border-[#d1d1d1]'>
                 <img
-                src={`http://localhost:7000${visible.image}`}
-                alt={visible.name}
-                className="w-[600px]  object-contain rounded-lg"
-              />
-            </div>
-                <div className='flex flex-col w-[50%] h-[90%] gap-5'>
-                <div className='flex justify-center border-b-1 border-[#d1d1d1] h-[40px]'><h2 className="text-2xl font-semibold">{visible.name}</h2></div>
+                  src={`http://localhost:7000${visible.image}`}
+                  alt={visible.name}
+                  className="w-[600px] object-contain rounded-lg"
+                />
+              </div>
+              <div className='flex flex-col w-[50%] h-[90%] gap-5'>
+                <div className='flex justify-center border-b-1 border-[#d1d1d1] h-[40px]'>
+                  <h2 className="text-2xl font-semibold">{visible.name}</h2>
+                </div>
                 <div className='w-[100%] pl-10'>
                   <h1>Fuel type : {visible.fuel}</h1>
                   <h1>Transmission : {visible.transmission}</h1>
@@ -124,20 +167,40 @@ const List = () => {
                   <h1>Torque : {visible.torque}</h1>
                   <h1>Available : {visible.availability ? 'True' : 'False'}</h1>
                   <h1>Description : {visible.discription}</h1>
-                  <h1>Here We display time (Comeing Soon)</h1>
+                  <h1>Here We display time (Coming Soon)</h1>
                 </div>
-                  <div className='flex flex-col gap-5 mt-5'>
-                    <div className='flex flex-row justify-around'>
-                      <button className='h-[35px] w-[150px] border border-black cursor-pointer'>Enter Details</button>
-                      <button className='h-[35px] w-[150px] border border-black cursor-pointer'>Elite Member</button>
-                    </div>
-                    <button className='w-[100%] h-[35px] border border-black cursor-pointer mt-10'>Book Car</button>
+                <div className='flex flex-col gap-5 mt-5'>
+                  <div className='flex flex-row w-full  justify-between'>
+                    <button
+                      className="relative overflow-hidden border border-[#d1d1d1] rounded-xl px-6 py-2 group text-xl font-serif cursor-pointer">
+                      <span className="absolute inset-0 bg-black transition-transform duration-500 translate-y-full group-hover:translate-y-0 z-0"></span>
+                      <span className="relative z-10 text-black group-hover:text-white transition-colors duration-300">
+                        Enter Details
+                      </span>
+                    </button>
+                    <button
+                      className="relative overflow-hidden border border-[#d1d1d1] rounded-xl px-6 py-2 group text-xl font-serif cursor-pointer">
+                      <span className="absolute inset-0 bg-black transition-transform duration-500 translate-y-full group-hover:translate-y-0 z-0"></span>
+                      <span className="relative z-10 text-black group-hover:text-white transition-colors duration-300">
+                        Elite Members
+                      </span>
+                    </button>
                   </div>
+                  <button
+                    className="relative overflow-hidden border border-[#d1d1d1] rounded-xl px-6 py-2 group text-xl font-serif cursor-pointer"
+                  >
+                    <span className="absolute inset-0 bg-green-500 transition-transform duration-500 translate-y-full group-hover:translate-y-0 z-0"></span>
+                    <span className="relative z-10 text-black group-hover:text-white transition-colors duration-300">
+                      Book Car
+                    </span>
+                  </button>
                 </div>
+              </div>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };

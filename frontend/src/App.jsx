@@ -6,7 +6,8 @@ import Hero from './components/hero'
 import BrowseCars from './components/navigation/lists'
 import About from './components/navigation/About' 
 import Contact from './components/navigation/Contact'
-
+import Enterdetail from './components/details/enterdetail'
+import Policy from './components/details/policy'
 const App = () => {
 
   return (
@@ -14,7 +15,7 @@ const App = () => {
         <BrowserRouter>
         {/* Your top navigation stays fixed across pages */}
         <Navigation />  
-
+        <Policy/>
         {/* Main content changes based on route */}
         <Routes>
           <Route path="/" element={<Hero />} />
@@ -24,6 +25,7 @@ const App = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
         </Routes>
+        <Enterdetail/>
       </BrowserRouter>
     </div>
   )
