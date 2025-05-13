@@ -45,15 +45,23 @@ const Enterdetail = () => {
                             </div>
                         </div>
                         </div>
-                        <div className='flex items-center flex-col h-[200px] w-full border-b-2 border-[#b8b8b8]'>
-                            <div className='w-full'><label className='ml-8'>Policy</label></div>
-                            <div className='h-[70%] w-[95%] border border-black rounded-2xl'>
-                                <Link to='/policy' className='h-[50px] w-[350px] rounded-2xl border border-black'>Read Before Booking Car</Link>
+                        <div className='flex flex-col h-[150px] w-full border-2 border-[#b8b8b8] pl-10 pt-5'>
+                            <label className='w-full'>Policy</label>
+                            <div className='w-full h-[100px]'>
+                                <div className='flex justify-center items-center h-[40px] w-[300px] text-xl font-serif border border-black hover:bg-black hover:text-white'><Link to='/policy' onClick={()=>(setCheck(true))}>Read Before Booking Car</Link></div>
+                                <div>
+                                    <input type='checkbox' /><label>Read The Policy Baad m Kuch hua toh matt keehna btaya ni.</label>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div className='flex justify-center items-center w-full'>                        
-                        <button type='submit' className='h-[42px] w-[350px] border border-black rounded-xl m-auto'>Submit Data</button>
+                    <div className='flex justify-center items-center w-full'>    
+                    <button className='h-[40px] w-[250px] border border-black font-serif'>Submit Details</button> 
+                    {!check ? 
+                        <p>Fill out the Required sections</p>
+                        :
+                        null
+                    }                  
                     </div>
                 </form>
             </div>

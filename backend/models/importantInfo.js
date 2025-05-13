@@ -1,5 +1,25 @@
 const { model, Schema } = require('mongoose');
 const Information = new Schema({
+    firstName:{
+        require: true,
+        type: String,
+        index: true,
+    },
+    lastName:{
+        require: true,
+        type: String,
+        index: true
+    },
+    phNumber:{
+        require: true,
+        type: String,
+        index: true
+    },
+    email:{
+        require: true,
+        type: String,
+        index: true
+    },
     adharCard: {
         type: String,
         require: true,
@@ -9,13 +29,19 @@ const Information = new Schema({
         reuire: true,
     },
     startDate: {
-        type: Date,
+        type: String,
         require: true,
     },
     endDate: {
-        type: Date,
+        type: String,
         require: true,
-    }
-}, {timestamps: true} )
+    },
+    availability: {
+        type: Boolean,
+        default: true,
+        index: true,
+    },
+}, {timestamps: true} );
+
 const customerInfo = model('customerInfo', Information);
 module.exports = customerInfo;

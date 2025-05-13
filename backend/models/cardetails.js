@@ -45,11 +45,6 @@ const carsDataSchema = new Schema({
         required: true,
         index: true,
     },
-    availability: {
-        type: Boolean,
-        default: true,
-        index: true,
-    },
     discription: {
         type: String,
         require: true,

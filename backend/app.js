@@ -6,7 +6,8 @@ const PORT = process.env.PORT || 7700;
 const path = require('path');
 const userRoute = require('./routes/user_route');
 const carRoute = require('./routes/cars_Data');
-// const CarsData = require('./routes/fetch_routes');
+const detail = require('./routes/details');
+
 const cors = require('cors');
 
 /*middlewares*/
@@ -19,7 +20,7 @@ app.use(express.static(path.resolve('./public')));
 /*Routes*/
 app.use('/', userRoute);
 app.use('/car', carRoute);
-// app.use('/carsList', CarsData)
+app.use('/detail', detail);
 
 /*Database Connection*/
 connectMongoDB(process.env.mongoDb)
