@@ -18,7 +18,7 @@ const userSchema = new Schema({
   },
   phNumber: {
     type: String,
-    require: true
+    required: true
   },
   password: {
     type: String,
@@ -28,16 +28,7 @@ const userSchema = new Schema({
   salt: {
     type: String,
     select: false,
-  },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  verifiedUser: {
-    type: Boolean,
-    default: false,
-  },
-  VerificationCode: String,
+  }
 }, { timestamps: true });
 
 // Hash password before saving
@@ -59,7 +50,7 @@ userSchema.pre('save', function (next) {
 userSchema.statics.MatchPasswordAndGenerateToken = async function (email, password) {
   const user = await this.findOne({ email }).select('+password +salt');
   if (!user) {
-    throw new Error('User not found in login');
+    throw new Error('User not found');
   }
 
   const userProvidedHash = createHmac('sha256', user.salt)
@@ -67,13 +58,13 @@ userSchema.statics.MatchPasswordAndGenerateToken = async function (email, passwo
     .digest('hex');
 
   if (user.password !== userProvidedHash) {
-    throw new Error('Email or password incorrect!');
+    throw new Error('Incorrect email or password');
   }
 
-  // Generate JWT token
+  // Generate JWT token with hardcoded secret
   const token = jwt.sign(
     { _id: user._id, email: user.email },
-    process.env.JWT_SECRET,
+    'your-super-secret-temporary-key-123',
     { expiresIn: '7d' }
   );
 
