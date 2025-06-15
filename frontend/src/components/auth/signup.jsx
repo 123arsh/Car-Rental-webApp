@@ -1,12 +1,13 @@
 import React, {useState} from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import axios from 'axios'
 import { FaCar, FaShieldAlt, FaUserCheck, FaCreditCard } from 'react-icons/fa';
 import { getErrorDetails } from '../../utils/errorHandler';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Signup = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ const Signup = () => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:7000/signup', 
+            const response = await axios.post('http://localhost:7700/signup', 
                 {
                     firstName,
                     lastName,
@@ -35,53 +36,16 @@ const Signup = () => {
             );
             
             if(response.status === 200 || response.status === 201){
+                // Set user data in AuthContext
+                login(response.data.user);
                 // Clear any existing errors
                 setError('');
-                // Show success toast
-                toast.success('Account created successfully! Welcome aboard!', {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                });
                 // Navigate to home page
                 navigate('/', { replace: true });
             }
         } catch (err) {
             const errorDetails = getErrorDetails(err);
             setError(errorDetails.message);
-
-            // Show error toast with appropriate styling based on error type
-            const toastConfig = {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            };
-
-            switch (errorDetails.type) {
-                case 'network':
-                    toast.error('⚠️ ' + errorDetails.message, {
-                        ...toastConfig,
-                        autoClose: false // Network errors should stay until dismissed
-                    });
-                    break;
-                case 'server':
-                    toast.error('🔧 ' + errorDetails.message, toastConfig);
-                    break;
-                case 'validation':
-                    toast.warning('ℹ️ ' + errorDetails.message, toastConfig);
-                    break;
-                case 'auth':
-                    toast.info('🔑 ' + errorDetails.message, toastConfig);
-                    break;
-                default:
-                    toast.error(errorDetails.message, toastConfig);
-            }
         } finally {
             setIsLoading(false);
         }
@@ -240,7 +204,7 @@ const Signup = () => {
                                         className='absolute right-3 top-1/2 transform -translate-y-1/2'
                                     >
                                         <img 
-                                            src={showPassword ? '/images/show.png' : '/images/hide.png'} 
+                                            src={showPassword ? '/images/visible.png' : '/images/hide.png'} 
                                             className='h-5 w-5'
                                             alt={showPassword ? 'Hide Password' : 'Show Password'}
                                         />

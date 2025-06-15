@@ -8,7 +8,7 @@ import Login from './components/auth/login';
 import Hero from './components/hero';
 import BrowseCars from './components/navigation/lists';
 import About from './components/navigation/About';
-import HelpAndSupport from './components/navigation/Help&Support';
+import HelpAndSupport from './components/details/help&support';
 import EnterDetails from './components/details/enterdetail';
 import Policy from './components/details/policy';
 import ProtectedRoute from './components/auth/ProtectedRoute';

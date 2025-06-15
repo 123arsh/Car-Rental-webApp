@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import axios from 'axios';
 import { FaCar, FaShieldAlt, FaUserCheck, FaCreditCard } from 'react-icons/fa';
 import { getErrorDetails } from '../../utils/errorHandler';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState();
@@ -17,7 +18,7 @@ const Login = () => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:7000/login', 
+            const response = await axios.post('http://localhost:7700/login', 
                 {
                     email,
                     password
@@ -29,52 +30,15 @@ const Login = () => {
             );
             
             if(response.status === 200 || response.status === 201){
+                // Set user data in AuthContext
+                login(response.data.user);
                 // Clear any existing errors
                 setError('');
-                // Show success toast
-                toast.success('Welcome back!', {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                });
                 navigate('/', { replace: true });
             }
         } catch (err) {
             const errorDetails = getErrorDetails(err);
             setError(errorDetails.message);
-
-            // Show error toast with appropriate styling based on error type
-            const toastConfig = {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            };
-
-            switch (errorDetails.type) {
-                case 'network':
-                    toast.error('⚠️ ' + errorDetails.message, {
-                        ...toastConfig,
-                        autoClose: false // Network errors should stay until dismissed
-                    });
-                    break;
-                case 'server':
-                    toast.error('🔧 ' + errorDetails.message, toastConfig);
-                    break;
-                case 'validation':
-                    toast.warning('ℹ️ ' + errorDetails.message, toastConfig);
-                    break;
-                case 'auth':
-                    toast.info('🔑 ' + errorDetails.message, toastConfig);
-                    break;
-                default:
-                    toast.error(errorDetails.message, toastConfig);
-            }
         } finally {
             setIsLoading(false);
         }

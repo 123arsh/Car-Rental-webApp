@@ -85,6 +85,8 @@ router.get('/user', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/favicon.ico', (req, res) => res.status(204).end());
+
 router.get('/:id', verifyToken, async (req, res) => {
     try {
         const userData = await user.findById(req.params.id).select('-password -salt');
