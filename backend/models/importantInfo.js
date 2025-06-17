@@ -41,6 +41,21 @@ const Information = new Schema({
         default: true,
         index: true,
     },
+    verificationStatus: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending',
+        index: true,
+    },
+    adminComment: {
+        type: String,
+        default: '',
+    },
+    carId: {
+        type: String,
+        required: true,
+        index: true,
+    },
 }, {timestamps: true} );
 
 const customerInfo = model('customerInfo', Information);

@@ -9,6 +9,7 @@ const carRoute = require('./routes/cars_Data');
 const detail = require('./routes/details');
 const ratingRoute = require('./routes/rating');
 const cookieParser = require('cookie-parser');
+const adminRoute = require('./routes/admin');
 
 const cors = require('cors');
 
@@ -17,7 +18,12 @@ app.use(express.urlencoded({ extended: false }));
 
 // Configure CORS with specific options
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Allow both localhost variations
+    origin: [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5174'
+    ], // Allow both localhost variations for user and admin
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
@@ -35,6 +41,7 @@ app.use('/', userRoute);
 app.use('/car', carRoute);
 app.use('/detail', detail);
 app.use('/api/ratings', ratingRoute);
+app.use('/api/admin', adminRoute);
 
 /*Database Connection*/
 connectMongoDB(process.env.mongoDb)

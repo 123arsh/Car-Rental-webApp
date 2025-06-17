@@ -186,6 +186,16 @@ const Navigation = () => {
             About
           </button>
 
+          {/* My Requests link for authenticated users */}
+          {isAuthenticated && user && (
+            <button 
+              onClick={() => handleNavigation('/my-requests')} 
+              className='hover:underline transition-colors duration-200'
+            >
+              My Requests
+            </button>
+          )}
+
           {/* Auth Buttons / User Dropdown */}
           {isAuthenticated && user ? (
             <div className="relative dropdown-container">

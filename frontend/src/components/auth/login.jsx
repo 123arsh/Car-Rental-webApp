@@ -156,7 +156,7 @@ const Login = () => {
                                         className='absolute right-3 top-1/2 transform -translate-y-1/2'
                                     >
                                         <img 
-                                            src={showPassword ? '/images/show.png' : '/images/hide.png'} 
+                                            src={showPassword ? '/images/visible.png' : '/images/hide.png'} 
                                             className='h-5 w-5'
                                             alt={showPassword ? 'Hide Password' : 'Show Password'}
                                         />

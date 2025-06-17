@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import ReviewForm from './ReviewForm';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -37,7 +38,7 @@ const Footer = () => {
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Cars</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
-              <li><a href="/admin" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">Admin</a></li>
+              <li><a href="http://localhost:5174/admin/login" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">Admin Login</a></li>
             </ul>
           </div>
 
@@ -60,6 +61,12 @@ const Footer = () => {
         {/* Copyright */}
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
           <p>&copy; {new Date().getFullYear()} CarRental. All rights reserved.</p>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-4 border-t border-gray-200">
+          <div className="flex items-center gap-4">
+            {/* Admin link removed since admin is on a separate port */}
+          </div>
         </div>
       </div>
     </footer>

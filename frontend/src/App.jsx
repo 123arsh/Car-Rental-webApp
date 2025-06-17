@@ -15,6 +15,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Navigation from './components/subComponents/navigation';
 import Footer from './components/subComponents/Footer';
 import Reviews from './components/subComponents/Reviews';
+import MyRequests from './components/navigation/MyRequests';
 
 function AppContent() {
   const location = useLocation();
@@ -77,6 +78,11 @@ function AppContent() {
         <Route path="/enter-details" element={
           <ProtectedRoute>
             <EnterDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-requests" element={
+          <ProtectedRoute>
+            <MyRequests />
           </ProtectedRoute>
         } />
 

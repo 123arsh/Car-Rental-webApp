@@ -1,22 +1,25 @@
-import { useState } from 'react'
-import Login from './auth/login.jsx'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/auth/login.jsx';
+import Signup from './components/auth/signup.jsx';
+import AdminDashboard from './components/dashboard.jsx';
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />
-  }
-
-  // Placeholder for dashboard
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-        <h2 className="text-3xl font-bold text-blue-700 mb-6">Admin Dashboard</h2>
-        <p>Welcome, admin! (Dashboard content will go here.)</p>
-      </div>
-    </div>
-  )
+function ProtectedRoute({ children }) {
+  const isAuthenticated = !!localStorage.getItem('adminToken');
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
-export default App
+function App() {
+  const isAuthenticated = !!localStorage.getItem('adminToken');
+  return (
+    <Router>
+      <Routes>
+        <Route path="/admin/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/admin/signup" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Signup />} />
+        <Route path="/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to="/admin/login" replace />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;

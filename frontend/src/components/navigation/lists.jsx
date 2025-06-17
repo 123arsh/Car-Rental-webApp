@@ -5,9 +5,16 @@ const List = () => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
+  const [bookingCar, setBookingCar] = useState(null);
+  const [bookingForm, setBookingForm] = useState({ firstName: '', lastName: '', phNumber: '', email: '', startDate: '', endDate: '', adharCard: null, drivingLicence: null });
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState('');
+  const [bookingError, setBookingError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchParams] = useSearchParams();
   const itemsPerPage = 5;
+  const [acceptedBookings, setAcceptedBookings] = useState([]);
 
   useEffect(() => {
     fetch('http://localhost:7700/car/list')
@@ -23,8 +30,18 @@ const List = () => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = visible ? 'hidden' : 'auto';
-  }, [visible]);
+    document.body.style.overflow = visible || showBooking ? 'hidden' : 'auto';
+  }, [visible, showBooking]);
+
+  useEffect(() => {
+    // Fetch accepted bookings
+    fetch('http://localhost:7700/detail/detail')
+      .then(res => res.json())
+      .then(data => {
+        const accepted = (data.detail || []).filter(d => d.verificationStatus === 'approved');
+        setAcceptedBookings(accepted);
+      });
+  }, []);
 
   const DisplayTheCard = (e) => {
     setVisible(e);
@@ -32,6 +49,55 @@ const List = () => {
 
   const HideTheCard = () => {
     setVisible(null);
+  };
+
+  const openBookingForm = (car) => {
+    setBookingCar(car);
+    setShowBooking(true);
+    setBookingForm({ firstName: '', lastName: '', phNumber: '', email: '', startDate: '', endDate: '', adharCard: null, drivingLicence: null });
+    setBookingSuccess('');
+    setBookingError('');
+  };
+
+  const closeBookingForm = () => {
+    setShowBooking(false);
+    setBookingCar(null);
+  };
+
+  const handleBookingChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setBookingForm((prev) => ({ ...prev, [name]: files[0] }));
+    } else {
+      setBookingForm((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    setBookingLoading(true);
+    setBookingSuccess('');
+    setBookingError('');
+    try {
+      const data = new FormData();
+      Object.entries(bookingForm).forEach(([key, value]) => {
+        data.append(key, value);
+      });
+      data.append('carId', bookingCar._id);
+      const res = await fetch('http://localhost:7700/detail/send', {
+        method: 'POST',
+        body: data,
+      });
+      if (res.ok) {
+        setBookingSuccess('Booking request submitted! Await admin approval.');
+        setBookingForm({ firstName: '', lastName: '', phNumber: '', email: '', startDate: '', endDate: '', adharCard: null, drivingLicence: null });
+      } else {
+        setBookingError('Failed to submit booking. Please try again.');
+      }
+    } catch {
+      setBookingError('Failed to submit booking. Please try again.');
+    }
+    setBookingLoading(false);
   };
 
   // Filter cars based on search query
@@ -90,6 +156,12 @@ const List = () => {
     }
   };
 
+  // Helper to check if a car is unavailable for the current date
+  const isCarUnavailable = (carId) => {
+    const today = new Date();
+    return acceptedBookings.some(b => b.carId === carId && new Date(b.startDate) <= today && today <= new Date(b.endDate));
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen w-full text-3xl text-red-700">
@@ -128,8 +200,8 @@ const List = () => {
                   className="w-full h-full object-contain p-4 transition-all duration-500 group-hover:scale-105 relative z-10"
                 />
                 <div className="absolute top-4 right-4 z-20 flex gap-2">
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm ${e.availability ? 'bg-green-100/90 text-green-800' : 'bg-red-100/90 text-red-800'}`}>
-                    {e.availability ? 'Available' : 'Unavailable'}
+                  <span className={`px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm ${isCarUnavailable(e._id) ? 'bg-red-100/90 text-red-800' : 'bg-green-100/90 text-green-800'}`}>
+                    {isCarUnavailable(e._id) ? 'Unavailable' : 'Available'}
                   </span>
                   <span className="px-4 py-2 rounded-full text-sm font-medium shadow-sm backdrop-blur-sm bg-blue-100/90 text-blue-800">
                     Premium
@@ -204,26 +276,18 @@ const List = () => {
                     className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    View Details
+                    <span className="text-sm">Quick View</span>
                   </button>
-                  <button className="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => openBookingForm(e)}
+                    className="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors duration-200 font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Book Now
-                  </button>
-                  <button
-                    onClick={() => window.location.href = `/enter-details?carId=${e._id}`}
-                    className="w-full sm:w-auto px-6 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors duration-200 font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 01-8 0" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v4m0 0a4 4 0 01-4 4H7a4 4 0 01-4-4V7a4 4 0 014-4h1a4 4 0 014 4z" />
-                    </svg>
-                    Buy Car
+                    Book Car
                   </button>
                 </div>
               </div>
@@ -386,7 +450,10 @@ const List = () => {
                   </div>
 
                   <div className='mt-6'>
-                    <button className="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:scale-[1.02]">
+                    <button 
+                      className="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:scale-[1.02]"
+                      onClick={() => { setShowBooking(true); setBookingCar(visible); setBookingForm({ firstName: '', lastName: '', phNumber: '', email: '', startDate: '', endDate: '', adharCard: null, drivingLicence: null }); setBookingSuccess(''); setBookingError(''); }}
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
@@ -396,6 +463,112 @@ const List = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Modal */}
+      {showBooking && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-8 relative shadow-2xl animate-fade-in">
+            <button onClick={closeBookingForm} className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200">
+              <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center flex items-center justify-center gap-2">
+              <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              Book {bookingCar?.name}
+            </h2>
+            <form onSubmit={handleBookingSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <input name="firstName" value={bookingForm.firstName} onChange={handleBookingChange} required className="peer input-floating" autoComplete="off" />
+                  <label className="label-floating">First Name</label>
+                </div>
+                <div className="relative">
+                  <input name="lastName" value={bookingForm.lastName} onChange={handleBookingChange} required className="peer input-floating" autoComplete="off" />
+                  <label className="label-floating">Last Name</label>
+                </div>
+                <div className="relative md:col-span-2">
+                  <input name="email" value={bookingForm.email} onChange={handleBookingChange} required className="peer input-floating" type="email" autoComplete="off" />
+                  <label className="label-floating">Email</label>
+                </div>
+                <div className="relative">
+                  <input name="phNumber" value={bookingForm.phNumber} onChange={handleBookingChange} required className="peer input-floating" autoComplete="off" />
+                  <label className="label-floating">Phone Number</label>
+                </div>
+                <div className="relative">
+                  <input name="startDate" value={bookingForm.startDate} onChange={handleBookingChange} required className="peer input-floating" type="date" autoComplete="off" />
+                  <label className="label-floating">Start Date</label>
+                </div>
+                <div className="relative md:col-span-2">
+                  <input name="endDate" value={bookingForm.endDate} onChange={handleBookingChange} required className="peer input-floating" type="date" autoComplete="off" />
+                  <label className="label-floating">End Date</label>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="font-medium flex items-center gap-2">Aadhar Card <span className="text-xs text-gray-400">(image/pdf)</span></label>
+                  <div className="relative border-2 border-dashed border-blue-400 rounded-lg p-4 bg-blue-50 hover:bg-blue-100 transition cursor-pointer flex flex-col items-center justify-center group" onDrop={e => { e.preventDefault(); setBookingForm(prev => ({ ...prev, adharCard: e.dataTransfer.files[0] })); }} onDragOver={e => e.preventDefault()} onClick={() => document.getElementById('adharCardInput').click()}>
+                    <svg className="w-7 h-7 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 4h-4a1 1 0 01-1-1v-4h6v4a1 1 0 01-1 1z" /></svg>
+                    <span className="text-gray-600 text-sm">Drag & drop or click to select</span>
+                    <input id="adharCardInput" name="adharCard" type="file" accept="image/*,application/pdf" onChange={handleBookingChange} required className="absolute inset-0 opacity-0 cursor-pointer" tabIndex={-1} />
+                    {bookingForm.adharCard && <span className="mt-2 text-xs text-blue-700">{bookingForm.adharCard.name}</span>}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="font-medium flex items-center gap-2">Driving Licence <span className="text-xs text-gray-400">(image/pdf)</span></label>
+                  <div className="relative border-2 border-dashed border-green-400 rounded-lg p-4 bg-green-50 hover:bg-green-100 transition cursor-pointer flex flex-col items-center justify-center group" onDrop={e => { e.preventDefault(); setBookingForm(prev => ({ ...prev, drivingLicence: e.dataTransfer.files[0] })); }} onDragOver={e => e.preventDefault()} onClick={() => document.getElementById('drivingLicenceInput').click()}>
+                    <svg className="w-7 h-7 text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 4h-4a1 1 0 01-1-1v-4h6v4a1 1 0 01-1 1z" /></svg>
+                    <span className="text-gray-600 text-sm">Drag & drop or click to select</span>
+                    <input id="drivingLicenceInput" name="drivingLicence" type="file" accept="image/*,application/pdf" onChange={handleBookingChange} required className="absolute inset-0 opacity-0 cursor-pointer" tabIndex={-1} />
+                    {bookingForm.drivingLicence && <span className="mt-2 text-xs text-green-700">{bookingForm.drivingLicence.name}</span>}
+                  </div>
+                </div>
+              </div>
+              {bookingError && <div className="text-red-600 text-sm text-center">{bookingError}</div>}
+              {bookingSuccess && <div className="text-green-600 text-sm text-center">{bookingSuccess}</div>}
+              <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-blue-800 transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled={bookingLoading}>
+                {bookingLoading && <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="4" className="opacity-25" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M4 12a8 8 0 018-8" className="opacity-75" /></svg>}
+                {bookingLoading ? 'Booking...' : 'Submit Booking Request'}
+              </button>
+            </form>
+            <style>{`
+              .input-floating {
+                width: 100%;
+                border: 1px solid #b0b3b8;
+                border-radius: 0.5rem;
+                padding: 1.25rem 1rem 0.5rem 1rem;
+                font-size: 1rem;
+                background: transparent;
+                outline: none;
+                transition: border 0.2s;
+              }
+              .input-floating:focus {
+                border-color: #6b7280;
+              }
+              .label-floating {
+                position: absolute;
+                left: 1rem;
+                top: 1.1rem;
+                font-size: 1rem;
+                color: #6b7280;
+                background: white;
+                padding: 0 0.25rem;
+                pointer-events: none;
+                transition: all 0.2s;
+              }
+              .input-floating:focus + .label-floating,
+              .input-floating:not(:placeholder-shown) + .label-floating,
+              textarea.input-floating:focus + .label-floating,
+              textarea.input-floating:not(:placeholder-shown) + .label-floating {
+                top: -0.7rem;
+                left: 0.75rem;
+                font-size: 0.85rem;
+                color: #6b7280;
+              }
+            `}</style>
           </div>
         </div>
       )}

@@ -26,6 +26,8 @@ const Enterdetail = () => {
     aadharCard: { uploaded: false, error: null }
   });
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [adminComment, setAdminComment] = useState('');
 
   // Fetch car info if carId is present
   useEffect(() => {
@@ -35,6 +37,22 @@ const Enterdetail = () => {
         .catch(() => setCar(null));
     }
   }, [carId]);
+
+  // Fetch latest verification status after submitSuccess
+  useEffect(() => {
+    if (submitSuccess && formData.email) {
+      axios.get('http://localhost:7700/detail/detail')
+        .then(res => {
+          const all = res.data.detail;
+          const userDetail = all.find(d => d.email === formData.email);
+          if (userDetail) {
+            setVerificationStatus(userDetail.verificationStatus);
+            setAdminComment(userDetail.adminComment);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [submitSuccess, formData.email]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -135,6 +153,12 @@ const Enterdetail = () => {
           )}
           {submitSuccess && (
             <div className='mt-4 text-center text-green-600 font-semibold'>Your details have been submitted! Our team will contact you soon.</div>
+          )}
+          {verificationStatus && (
+            <div className={`mt-4 text-center font-semibold ${verificationStatus === 'approved' ? 'text-green-600' : verificationStatus === 'rejected' ? 'text-red-600' : 'text-yellow-600'}`}>
+              Document Status: {verificationStatus.charAt(0).toUpperCase() + verificationStatus.slice(1)}
+              {adminComment && <div className='mt-1 text-sm text-gray-700'>Admin comment: {adminComment}</div>}
+            </div>
           )}
         </div>
 
